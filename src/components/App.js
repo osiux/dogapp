@@ -1,6 +1,7 @@
 import React from "react";
 
 import FormBreeds from './FormBreeds';
+import LoadingDots from "./LoadingDots";
 
 const getUrl = (url) => {
     return fetch(url)
@@ -60,14 +61,14 @@ class App extends React.Component {
         e.preventDefault();
 
         this.setState({
-            loading: true,
+            loadingImages: true,
             images: []
         });
 
         const images = await this._getImages();
 
         this.setState({
-            loading: false,
+            loadingImages: false,
             images
         });
     };
@@ -78,7 +79,7 @@ class App extends React.Component {
     };
 
     render() {
-        const { images, breeds, loadingBreeds } = this.state;
+        const { images, breeds, loadingBreeds, loadingImages } = this.state;
 
         return (
             <div className="gds-layout__container">
@@ -89,13 +90,19 @@ class App extends React.Component {
                     onChange={this._handleChange}
                 />
 
-                {
-                    images.length > 0 && (
-                        <div className="gds-layout__column--md-12 -p-t-5">
-                            hi
+                {loadingImages && (
+                    <div className="gds-layout__column--md-12 -p-t-5">
+                        <LoadingDots />
+                    </div>
+                )}
+
+                <div className="gds-layout__column--md-12 -p-t-5">
+                    {images.map(img => (
+                        <div key={img} className="gds-flex__item">
+                            <img className="gds-image img-responsive" src={img} alt="" />
                         </div>
-                    )
-                }
+                    ))}
+                </div>
             </div>
         );
     }

@@ -5,8 +5,9 @@ import BreedSelect from "./BreedSelect";
 
 const FormBreeds = ({ loading, breeds, onChange, onSubmit }) => (
     <div className="gds-layout__column--md-12 -p-t-5">
-        {loading && <LoadingDots />}
-        {loading || (
+        {loading ? (
+            <LoadingDots />
+        ) : (
             <form onSubmit={onSubmit}>
                 <div>
                     <div className="gds-flex -m-b-3">
