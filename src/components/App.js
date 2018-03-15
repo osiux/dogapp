@@ -1,15 +1,14 @@
 import React from "react";
 
-import BreedSelect from "./BreedSelect";
-import LoadingDots from "./LoadingDots";
+import FormBreeds from './FormBreeds';
 
-const getUrl = url => {
+const getUrl = (url) => {
     return fetch(url)
         .then(response => {
             if (response.ok) {
                 return response.json();
             }
-            throw new Error(response.statusText);
+            throw new Error(response.message)
         })
         .catch(error => alert(error));
 };
@@ -19,11 +18,13 @@ class App extends React.Component {
         super();
 
         this.state = {
+            images: [],
             breeds: [],
-            breed1: "",
-            breed2: "",
-            breed3: "",
-            loading: true
+            breed1: '',
+            breed2: '',
+            breed3: '',
+            loadingBreeds: true,
+            loadingImages: false
         };
     }
 
@@ -35,60 +36,66 @@ class App extends React.Component {
         getUrl("https://dog.ceo/api/breeds/list").then(response => {
             this.setState({
                 breeds: response.message,
-                loading: false
+                loadingBreeds: false
             });
         });
     };
 
-    _getImages = e => {
+    _getImages = async () => {
+        const { breed1, breed2, breed3 } = this.state;
+
+        if (!breed1 || !breed2 || !breed3) {
+            alert('You should select three breeds.');
+            return false;
+        }
+
+        const image1 = await getUrl(`https://dog.ceo/api/breed/${breed1}/images/random`);
+        const image2 = await getUrl(`https://dog.ceo/api/breed/${breed2}/images/random`);
+        const image3 = await getUrl(`https://dog.ceo/api/breed/${breed3}/images/random`);
+
+        return [image1.message, image2.message, image3.message];
+    };
+
+    _showImages = async e => {
         e.preventDefault();
+
+        this.setState({
+            loading: true,
+            images: []
+        });
+
+        const images = await this._getImages();
+
+        this.setState({
+            loading: false,
+            images
+        });
     };
 
     _handleChange = e => {
         const { name, value } = e.target;
-        this.setState({
-            [name]: value
-        });
+        this.setState({ [name]: value });
     };
 
     render() {
-        const { breeds, loading } = this.state;
+        const { images, breeds, loadingBreeds } = this.state;
 
         return (
             <div className="gds-layout__container">
-                <div className="gds-layout__column--md-12 -p-t-5">
-                    {loading && <LoadingDots />}
-                    {loading || (
-                        <form onSubmit={this._getImages}>
-                            <div>
-                                <div className="gds-flex -m-b-3">
-                                    <BreedSelect
-                                        name="breed1"
-                                        breeds={breeds}
-                                        onChange={this._handleChange}
-                                    />
-                                    <BreedSelect
-                                        name="breed2"
-                                        breeds={breeds}
-                                        onChange={this._handleChange}
-                                    />
-                                    <BreedSelect
-                                        name="breed3"
-                                        breeds={breeds}
-                                        onChange={this._handleChange}
-                                    />
-                                </div>
-                                <div className="gds-flex">
-                                    <div className="gds-flex__item">
-                                        <button className="gds-button gds-button--md gds-button--primary gds-button--block">
-                                            Submit
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
-                    )}
-                </div>
+                <FormBreeds
+                    loading={loadingBreeds}
+                    breeds={breeds}
+                    onSubmit={this._showImages}
+                    onChange={this._handleChange}
+                />
+
+                {
+                    images.length > 0 && (
+                        <div className="gds-layout__column--md-12 -p-t-5">
+                            hi
+                        </div>
+                    )
+                }
             </div>
         );
     }
